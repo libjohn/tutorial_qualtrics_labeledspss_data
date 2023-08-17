@@ -76,6 +76,6 @@ my_df_tall |>
 ```
 
 ```{r}
-ggsave("output/viz_as_imported_labeled_data.svg")
+ggsave("output/viz_as_imported_labeled_data.svg", height = 12, width = 14.5)
 ```
 
