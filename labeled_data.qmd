@@ -75,7 +75,24 @@ my_df_tall |>
   
 ```
 
+
+
 ```{r}
+#| fig-width: 12
+#| fig-asp: 1.2
+#| echo: false
+
+
+# FOR README ##
+
+
+my_df_tall |> 
+  filter(question != "status_label",
+         question != "finished_label") |> 
+  ggplot(aes(y = response)) +
+  geom_bar() +
+  facet_wrap(vars(question), scales = "free", ncol = 2)
+
 ggsave("output/viz_as_imported_labeled_data.svg", width = 12, height = 14.5)
 ```
 
