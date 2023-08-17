@@ -14,7 +14,8 @@ CSV data are imported in the `csv_data.qmd` code notebook.
 
 The coding technique for importing labeld data uses the haven package
 
-```{my_df  <- read_sav("data/my_file.sav")}
+```         
+my_df  <- read_sav("data/my_file.sav")
 
 # convert labeled data to factors in R
 my_df |> 
