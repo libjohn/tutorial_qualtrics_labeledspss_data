@@ -136,7 +136,7 @@ my_df_tall |>
          question != "finished_label") |> 
   ggplot(aes(y = response)) +
   geom_bar() +
-  facet_wrap(vars(str_wrap(question_text, width = 32)), 
+  facet_wrap(vars(str_wrap(question_text, width = 50)), 
              scales = "free", ncol = 2) +
   labs(x = NULL, y = NULL, title = "Question text is imported from CSV") +
   theme(plot.title.position = "plot")
