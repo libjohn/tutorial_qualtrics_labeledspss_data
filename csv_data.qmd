@@ -141,5 +141,5 @@ my_df_tall |>
   labs(x = NULL, y = NULL, title = "Question text is imported from CSV") +
   theme(plot.title.position = "plot")
 
-ggsave("output/viz_as_imported_CSV_question_text.svg", width = 12, height = 24)
+ggsave("output/viz_as_imported_CSV_question_text.svg", width = 12, height = 30)
 ```
