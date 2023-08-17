@@ -27,3 +27,5 @@ my_df |>
 ![Qualtrics Labeled data: imported via haven.](output/viz_as_imported_labeled_data.svg)
 
 ![CSV imported data has question text in header](output/viz_as_imported_CSV_question_text.svg)
+
+![CSV imported data has question text in header](output/viz_as_imported_CSV_question_text.svg)
