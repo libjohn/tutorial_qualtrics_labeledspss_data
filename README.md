@@ -17,6 +17,18 @@ The coding technique for importing labeld data uses the haven package
 ```         
 my_df  <- read_sav("data/my_file.sav")
 
+# convert just one variable. e.g. `q1`
+
+## single variable example
+
+my_student_survey_spss_sas |> 
+  select(q1) |> 
+  mutate(q1_label = as_factor(q1)) 
+
+
+
+## across all 'labeled' variables
+
 # convert labeled data to factors in R
 my_df |> 
   mutate(across(is.labelled, ~ as_factor(.x), .names = "{.col}_label"))
