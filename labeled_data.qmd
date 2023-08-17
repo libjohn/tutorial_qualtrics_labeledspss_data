@@ -1,0 +1,76 @@
+---
+title: "qualtrics_spss"
+editor: source
+---
+
+Using the tidyverse package and the haven package. {haven} is used to import `.sav` files
+
+```{r}
+library(tidyverse)
+library(haven)
+library(tidytext)
+```
+
+## Import data
+
+The following is test data randomly generated at Qualtrics. From Qualtrics, the same data were exported: once as a CSV file; another copy as a .sav (label \[SPSS \| SAS \| Stata\] ) file. When the Qualtrics data are downloaded as CSV, survey developer can download data as numeric response or categorical-text (option: "use choice text".)
+
+```{r}
+my_student_survey_spss_sas <- read_sav("data/student+satisfaction+-+test+data_April+11,+2023_17.30.sav") |> 
+  janitor::clean_names()
+```
+
+## Wrangle labeled (SPSS SAS) data
+
+Create one labeled column to a character column of categories
+
+```{r}
+my_student_survey_spss_sas |> 
+  mutate(Q2_label = as_factor(q2), .after = q2)
+```
+
+Convert all labeled columns to categorical columns
+
+```{r}
+my_student_survey_spss_sas <- my_student_survey_spss_sas |> 
+  mutate(across(is.labelled, ~ as_factor(.x), .names = "{.col}_label"))
+```
+
+We can also pivot the data to a long format. This will make it easier to iterate over mulitple visualizations
+
+```{r}
+my_df_tall <- my_student_survey_spss_sas |> 
+  select(response_id, contains("label")) |>
+  pivot_longer(-c(response_id, q15_label), names_to = "question", values_to = "response")
+my_df_tall
+```
+
+## Example Viz
+
+By importing data as labeled categories, it's easier to use that information in a visualization such as the following
+
+### data tables
+
+First, let's look at the data frames in the wide format
+
+```{r}
+my_student_survey_spss_sas
+```
+
+And now let's make a faceted bar chart from the tall formatted data
+
+```{r}
+#| fig-width: 12
+#| fig-asp: 1.2
+
+# NOTE:  Render this code using the render button.  It looks better in the rendered document
+
+
+my_df_tall |> 
+  filter(question != "status_label",
+         question != "finished_label") |> 
+  ggplot(aes(y = response)) +
+  geom_bar() +
+  facet_wrap(vars(question), scales = "free", ncol = 3)
+  
+```

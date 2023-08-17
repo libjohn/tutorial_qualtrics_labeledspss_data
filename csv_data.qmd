@@ -1,0 +1,120 @@
+---
+title: "CSV data"
+editor: source
+---
+
+Using the tidyverse package with CSV data.  
+
+## load library packages
+
+```{r}
+library(tidyverse)
+library(haven)
+library(tidytext)
+```
+**Note**:  Data importing challenges
+
+There are challenges with importing either labeled data or CSV data.  When importing labeled data, categories, or factors, are imported.  This makes it easier to arrange responses in the desired categorical order.  On the other hand, the full text of the questions are not available in the labeled data import.  
+
+To gather the question text, we can  import the CSV data.  The challenge with the CSV data is that the categories of responses are not imported.  To coerce category order we can use the forcats package along with dplyr's `case_when()` or `mutate()` plus `if_else()`.
+
+Alternatively, we can import the data in both formats and pick and choose which elements you need.
+
+## CSV 
+
+One other challenge with Qualtrics CSV or Excel data is the complex two-row column headers.  Below is a demonstration of managing our survey data and questions data into the "tidy data" format.  Tidy data format works well in an R/Tidyverse context.
+
+### Import CSV data
+
+Import the same file twice but selectively.  The first import gathers the data.  The second imports, of the same file, gathers the questions.
+
+```{r}
+my_student_sat_csv <- read_csv("data/student_satisfaction_test_data-qualtrics.csv", 
+    col_names = FALSE, skip = 3)
+
+my_df_colnames_and_questions <- read_csv("data/student_satisfaction_test_data-qualtrics.csv", 
+    n_max = 1) |> 
+  janitor::clean_names()
+```
+
+
+## Wrangle the data and questions
+
+
+Now I want to use the column names from the second data_frame and rename the same columsn in the first data frame.
+
+```{r}
+my_colnames_vec <- colnames(my_df_colnames_and_questions)
+
+colnames(my_student_sat_csv) <- my_colnames_vec
+```
+
+### My data
+
+now I can see my data with the transformed variable names
+
+```{r}
+my_student_sat_csv
+```
+
+### My survey questions
+
+My survey questions are now in a table that is easy to use for other purposes such as referencing question numbers or using as labels in visualizations. If you don't see the original text of the questions, scroll to the right to see the `questions_text` variable in the data frame, below.
+
+```{r}
+my_df_colnames_and_questions <- my_df_colnames_and_questions |> 
+  pivot_longer(cols = q1:last_col(), names_to = "question_orig_label", values_to = "question_text") |> 
+  select(starts_with("question")) 
+my_df_colnames_and_questions
+  
+```
+
+### pivot data to tall format
+
+Tall data helps us visualize multiple charts with minimal coding
+
+```{r}
+my_df_tall <- my_student_sat_csv |>
+  select(response_id, starts_with("q")) |>
+  pivot_longer(-c(response_id, q15), names_to = "question", values_to = "response")
+```
+
+
+## Viz
+
+```{r}
+#| fig-width: 12
+#| fig-asp: 1.2
+
+# NOTE:  Render this code using the render button.  It looks better in the rendered document
+my_df_tall |> 
+  filter(question != "status_label",
+         question != "finished_label") |> 
+  ggplot(aes(y = response)) +
+  geom_bar() +
+  facet_wrap(vars(question), scales = "free", ncol = 3)
+```
+
+## merge question text into survey data frame
+
+This will allow us to disply more descriptive chart titles by showing the survey question.  Remember, the survey question were the two column header of the survey when downloaded from qualtrics as a CSV file.
+
+```{r}
+#| fig-width: 10
+#| fig-asp: 2.0
+
+# NOTE:  Render this code using the render button.  It looks better in the rendered document
+
+# my_df_colnames_and_questions
+my_df_tall |> 
+  left_join(my_df_colnames_and_questions, 
+            join_by(question == question_orig_label)) |> 
+  filter(question != "status_label",
+         question != "finished_label") |> 
+  ggplot(aes(y = response)) +
+  geom_bar() +
+  facet_wrap(vars(str_wrap(question_text, width = 32)), 
+             scales = "free", ncol = 2) +
+  labs(x = NULL, y = NULL)
+```
+
