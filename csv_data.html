@@ -117,10 +117,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidytext)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p><strong>Note</strong>: Data importing challenges</p>
+<p>There are challenges with importing either labeled data or CSV data. When importing labeled data, categories, or factors, are imported. This makes it easier to arrange responses in the desired categorical order. On the other hand, the full text of the questions are not available in the labeled data import.</p>
+<p>To gather the question text, we can import the CSV data. The challenge with the CSV data is that the categories of responses are not imported. To coerce category order we can use the forcats package along with dplyr’s <code>case_when()</code> or <code>mutate()</code> plus <code>if_else()</code>.</p>
+<p>Alternatively, we can import the data in both formats and pick and choose which elements you need.</p>
 </section>
 <section id="csv" class="level2">
 <h2 class="anchored" data-anchor-id="csv">CSV</h2>
-<p>The challenge with Qualtrics CSV or Excel data is the complex two-row column headers. Here’s one way to mange the data into a tidy-data format that works well in an R/Tidyverse context</p>
+<p>One other challenge with Qualtrics CSV or Excel data is the complex two-row column headers. Below is a demonstration of managing our survey data and questions data into the “tidy data” format. Tidy data format works well in an R/Tidyverse context.</p>
 <section id="import-csv-data" class="level3">
 <h3 class="anchored" data-anchor-id="import-csv-data">Import CSV data</h3>
 <p>Import the same file twice but selectively. The first import gathers the data. The second imports, of the same file, gathers the questions.</p>
@@ -265,6 +269,11 @@ chr (32): StartDate, EndDate, Status, IPAddress, Progress, Duration (in seco...
 <span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="cn">NULL</span>, <span class="at">y =</span> <span class="cn">NULL</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="csv_data_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="960"></p>
+</div>
+</div>
+<div class="cell" data-fig.asp="1.2">
+<div class="cell-output-display">
+<p><img src="csv_data_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="1152"></p>
 </div>
 </div>
 </section>

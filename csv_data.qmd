@@ -118,3 +118,28 @@ my_df_tall |>
   labs(x = NULL, y = NULL)
 ```
 
+
+
+```{r}
+#| fig-width: 12
+#| fig-asp: 1.2
+#| echo: false
+
+
+# FOR README ##
+
+
+my_df_tall |> 
+  left_join(my_df_colnames_and_questions, 
+            join_by(question == question_orig_label)) |> 
+  filter(question != "status_label",
+         question != "finished_label") |> 
+  ggplot(aes(y = response)) +
+  geom_bar() +
+  facet_wrap(vars(str_wrap(question_text, width = 32)), 
+             scales = "free", ncol = 2) +
+  labs(x = NULL, y = NULL, title = "Question text is imported from CSV") +
+  theme(plot.title.position = "plot")
+
+ggsave("output/viz_as_imported_CSV_question_text.svg", width = 12, height = 14.5)
+```

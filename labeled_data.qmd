@@ -91,7 +91,9 @@ my_df_tall |>
          question != "finished_label") |> 
   ggplot(aes(y = response)) +
   geom_bar() +
-  facet_wrap(vars(question), scales = "free", ncol = 2)
+  facet_wrap(vars(question), scales = "free", ncol = 2) +
+  labs(x = NULL, y = NULL, title = "Labeled categories are sorted in imported factor order") +
+  theme(plot.title.position = "plot")
 
 ggsave("output/viz_as_imported_labeled_data.svg", width = 12, height = 14.5)
 ```
