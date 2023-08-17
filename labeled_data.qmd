@@ -74,3 +74,8 @@ my_df_tall |>
   facet_wrap(vars(question), scales = "free", ncol = 3)
   
 ```
+
+```{r}
+ggsave("output/viz_as_imported_labeled_data.svg")
+```
+

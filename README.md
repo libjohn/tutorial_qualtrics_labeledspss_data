@@ -21,3 +21,7 @@ my_df  <- read_sav("data/my_file.sav")
 my_df |> 
   mutate(across(is.labelled, ~ as_factor(.x), .names = "{.col}_label"))
 ```
+
+### Example
+
+![Qualtrics Labeled data: imported via haven.](output/viz_as_imported_labeled_data.svg)
