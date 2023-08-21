@@ -73,7 +73,6 @@ my_abbreviated_questions <- my_df_colnames_and_questions |>
   anti_join(stop_words) |> 
   summarise(question_abbreviated = paste(word, collapse = " ")) |> 
   mutate(question_abbreviated = str_trim(question_abbreviated)) |> 
-  mutate(question_abbreviated = str_to_title(question_abbreviated)) |> 
   mutate(question_abbreviated = paste(question_orig_label, " ", question_abbreviated))
 
 my_df_colnames_and_questions <- my_df_colnames_and_questions |> 
