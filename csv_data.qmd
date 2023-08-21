@@ -65,6 +65,9 @@ My survey questions are now in a table that is easy to use for other purposes su
 my_df_colnames_and_questions <- my_df_colnames_and_questions |> 
   pivot_longer(cols = q1:last_col(), names_to = "question_orig_label", values_to = "question_text") |> 
   select(starts_with("question")) 
+  # mutate(lab2 = paste(question_orig_label, question_text)) |> 
+  # mutate(lab2 = as_factor(lab2)) 
+  
 
 my_abbreviated_questions <- my_df_colnames_and_questions |> 
   mutate(question_text = str_remove(question_text, "Thank you for participating in this student satisfaction survey. Your answers will be used to improve the student experience. \n")) |>
@@ -72,8 +75,10 @@ my_abbreviated_questions <- my_df_colnames_and_questions |>
   unnest_tokens(word, question_text) |> 
   anti_join(stop_words) |> 
   summarise(question_abbreviated = paste(word, collapse = " ")) |> 
+  arrange(as.numeric(str_extract(question_orig_label, "\\d+"))) |> 
   mutate(question_abbreviated = str_trim(question_abbreviated)) |> 
-  mutate(question_abbreviated = paste(question_orig_label, " ", question_abbreviated))
+  mutate(question_abbreviated = paste(question_orig_label, question_abbreviated)) |> 
+  mutate(question_abbreviated = as_factor(question_abbreviated))
 
 my_df_colnames_and_questions <- my_df_colnames_and_questions |> 
   left_join(my_abbreviated_questions, join_by("question_orig_label"))
@@ -126,9 +131,10 @@ my_df_tall |>
          question != "finished_label") |> 
   ggplot(aes(y = response)) +
   geom_bar() +
-  facet_wrap(vars(str_wrap(question_abbreviated, width = 32)), 
+  facet_wrap(vars(as_factor(str_wrap(question_abbreviated, width = 32))), 
              scales = "free", ncol = 2) +
-  labs(x = NULL, y = NULL)
+  labs(x = NULL, y = NULL) +
+  theme(plot.title.position = "plot", strip.text.x = element_text(hjust = 0, vjust = 1, size = 14))
 ```
 
 
@@ -145,13 +151,15 @@ my_df_tall |>
   left_join(my_df_colnames_and_questions, 
             join_by(question == question_orig_label)) |> 
   filter(question != "status_label",
-         question != "finished_label") |> 
+         question != "finished_label") |> # pull(question_abbreviated) |> levels()
+  mutate(question_abbreviated = as_factor(str_wrap(question_abbreviated, width = 70))) |> 
   ggplot(aes(y = response)) +
   geom_bar() +
-  facet_wrap(vars(str_wrap(question_abbreviated, width = 50)), 
+  facet_wrap(vars(question_abbreviated), 
+  # facet_wrap(vars(str_wrap(question_abbreviated, width = 50)), 
              scales = "free", ncol = 2) +
   labs(x = NULL, y = NULL, title = "Question text is imported from CSV") +
-  theme(plot.title.position = "plot")
+  theme(plot.title.position = "plot", strip.text.x = element_text(hjust = 0))
 
 ggsave("output/viz_as_imported_CSV_question_text.svg", width = 12, height = 30)
 ```
