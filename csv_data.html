@@ -202,26 +202,42 @@ chr (32): StartDate, EndDate, Status, IPAddress, Progress, Duration (in seco...
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>my_df_colnames_and_questions <span class="ot">&lt;-</span> my_df_colnames_and_questions <span class="sc">|&gt;</span> </span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> q1<span class="sc">:</span><span class="fu">last_col</span>(), <span class="at">names_to =</span> <span class="st">"question_orig_label"</span>, <span class="at">values_to =</span> <span class="st">"question_text"</span>) <span class="sc">|&gt;</span> </span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">starts_with</span>(<span class="st">"question"</span>)) </span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>my_df_colnames_and_questions</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>my_abbreviated_questions <span class="ot">&lt;-</span> my_df_colnames_and_questions <span class="sc">|&gt;</span> </span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">question_text =</span> <span class="fu">str_remove</span>(question_text, <span class="st">"Thank you for participating in this student satisfaction survey. Your answers will be used to improve the student experience. </span><span class="sc">\n</span><span class="st">"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(question_orig_label) <span class="sc">|&gt;</span> </span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest_tokens</span>(word, question_text) <span class="sc">|&gt;</span> </span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">anti_join</span>(stop_words) <span class="sc">|&gt;</span> </span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">question_abbreviated =</span> <span class="fu">paste</span>(word, <span class="at">collapse =</span> <span class="st">" "</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">question_abbreviated =</span> <span class="fu">str_trim</span>(question_abbreviated)) <span class="sc">|&gt;</span> </span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">question_abbreviated =</span> <span class="fu">str_to_title</span>(question_abbreviated)) <span class="sc">|&gt;</span> </span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">question_abbreviated =</span> <span class="fu">paste</span>(question_orig_label, <span class="st">" "</span>, question_abbreviated))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(word)`</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>my_df_colnames_and_questions <span class="ot">&lt;-</span> my_df_colnames_and_questions <span class="sc">|&gt;</span> </span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(my_abbreviated_questions, <span class="fu">join_by</span>(<span class="st">"question_orig_label"</span>))</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>my_df_colnames_and_questions</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 15 × 2
-   question_orig_label question_text                                            
-   &lt;chr&gt;               &lt;chr&gt;                                                    
- 1 q1                  "Thank you for participating in this student satisfactio…
- 2 q2                  "How easy or difficult is it to obtain the resources tha…
- 3 q3                  "How useful are the services provided at the on-campus c…
- 4 q4                  "How helpful or unhelpful is the staff at the on-campus …
- 5 q5                  "How well maintained are the facilities at this universi…
- 6 q6                  "How safe or unsafe do you feel on campus?"              
- 7 q7                  "How good or bad is the quality of the food served at th…
- 8 q8                  "How satisfied or dissatisfied were you with the univers…
- 9 q9                  "Overall, how well do the professors at this university …
-10 q10                 "How easy or difficult is it to register for courses at …
-11 q12                 "How reasonable or unreasonable is the cost of courses/t…
-12 q13                 "Overall, how satisfied or dissatisfied are you with you…
-13 q14                 "How likely are you to attend this university next year?"
-14 q15_nps_group       "How likely are you to recommend this university to frie…
-15 q15                 "How likely are you to recommend this university to frie…</code></pre>
+<pre><code># A tibble: 15 × 3
+   question_orig_label question_text                        question_abbreviated
+   &lt;chr&gt;               &lt;chr&gt;                                &lt;chr&gt;               
+ 1 q1                  "Thank you for participating in thi… q1   Helpful Unhelp…
+ 2 q2                  "How easy or difficult is it to obt… q2   Easy Difficult…
+ 3 q3                  "How useful are the services provid… q3   Services Provi…
+ 4 q4                  "How helpful or unhelpful is the st… q4   Helpful Unhelp…
+ 5 q5                  "How well maintained are the facili… q5   Maintained Fac…
+ 6 q6                  "How safe or unsafe do you feel on … q6   Safe Unsafe Fe…
+ 7 q7                  "How good or bad is the quality of … q7   Bad Quality Fo…
+ 8 q8                  "How satisfied or dissatisfied were… q8   Satisfied Diss…
+ 9 q9                  "Overall, how well do the professor… q9   Professors Uni…
+10 q10                 "How easy or difficult is it to reg… q10   Easy Difficul…
+11 q12                 "How reasonable or unreasonable is … q12   Reasonable Un…
+12 q13                 "Overall, how satisfied or dissatis… q13   Satisfied Dis…
+13 q14                 "How likely are you to attend this … q14   Attend Univer…
+14 q15_nps_group       "How likely are you to recommend th… q15_nps_group   Rec…
+15 q15                 "How likely are you to recommend th… q15   Recommend Uni…</code></pre>
 </div>
 </div>
 </section>
@@ -229,22 +245,22 @@ chr (32): StartDate, EndDate, Status, IPAddress, Progress, Duration (in seco...
 <h3 class="anchored" data-anchor-id="pivot-data-to-tall-format">pivot data to tall format</h3>
 <p>Tall data helps us visualize multiple charts with minimal coding</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>my_df_tall <span class="ot">&lt;-</span> my_student_sat_csv <span class="sc">|&gt;</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(response_id, <span class="fu">starts_with</span>(<span class="st">"q"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span><span class="fu">c</span>(response_id, q15), <span class="at">names_to =</span> <span class="st">"question"</span>, <span class="at">values_to =</span> <span class="st">"response"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>my_df_tall <span class="ot">&lt;-</span> my_student_sat_csv <span class="sc">|&gt;</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(response_id, <span class="fu">starts_with</span>(<span class="st">"q"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span><span class="fu">c</span>(response_id, q15), <span class="at">names_to =</span> <span class="st">"question"</span>, <span class="at">values_to =</span> <span class="st">"response"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
 <section id="viz" class="level2">
 <h2 class="anchored" data-anchor-id="viz">Viz</h2>
 <div class="cell" data-fig.asp="1.2">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># </span><span class="al">NOTE</span><span class="co">:  Render this code using the render button.  It looks better in the rendered document</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>my_df_tall <span class="sc">|&gt;</span> </span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(question <span class="sc">!=</span> <span class="st">"status_label"</span>,</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>         question <span class="sc">!=</span> <span class="st">"finished_label"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">y =</span> response)) <span class="sc">+</span></span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>() <span class="sc">+</span></span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="fu">vars</span>(question), <span class="at">scales =</span> <span class="st">"free"</span>, <span class="at">ncol =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># </span><span class="al">NOTE</span><span class="co">:  Render this code using the render button.  It looks better in the rendered document</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>my_df_tall <span class="sc">|&gt;</span> </span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(question <span class="sc">!=</span> <span class="st">"status_label"</span>,</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>         question <span class="sc">!=</span> <span class="st">"finished_label"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">y =</span> response)) <span class="sc">+</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>() <span class="sc">+</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="fu">vars</span>(question), <span class="at">scales =</span> <span class="st">"free"</span>, <span class="at">ncol =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="csv_data_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="1152"></p>
 </div>
@@ -254,26 +270,21 @@ chr (32): StartDate, EndDate, Status, IPAddress, Progress, Duration (in seco...
 <h2 class="anchored" data-anchor-id="merge-question-text-into-survey-data-frame">merge question text into survey data frame</h2>
 <p>This will allow us to disply more descriptive chart titles by showing the survey question. Remember, the survey question were the two column header of the survey when downloaded from qualtrics as a CSV file.</p>
 <div class="cell" data-fig.asp="2">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># </span><span class="al">NOTE</span><span class="co">:  Render this code using the render button.  It looks better in the rendered document</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co"># my_df_colnames_and_questions</span></span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>my_df_tall <span class="sc">|&gt;</span> </span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(my_df_colnames_and_questions, </span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>            <span class="fu">join_by</span>(question <span class="sc">==</span> question_orig_label)) <span class="sc">|&gt;</span> </span>
-<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(question <span class="sc">!=</span> <span class="st">"status_label"</span>,</span>
-<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>         question <span class="sc">!=</span> <span class="st">"finished_label"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">y =</span> response)) <span class="sc">+</span></span>
-<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>() <span class="sc">+</span></span>
-<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="fu">vars</span>(<span class="fu">str_wrap</span>(question_text, <span class="at">width =</span> <span class="dv">32</span>)), </span>
-<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>             <span class="at">scales =</span> <span class="st">"free"</span>, <span class="at">ncol =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="cn">NULL</span>, <span class="at">y =</span> <span class="cn">NULL</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># </span><span class="al">NOTE</span><span class="co">:  Render this code using the render button.  It looks better in the rendered document</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="co"># my_df_colnames_and_questions</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>my_df_tall <span class="sc">|&gt;</span> </span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(my_df_colnames_and_questions, </span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>            <span class="fu">join_by</span>(question <span class="sc">==</span> question_orig_label)) <span class="sc">|&gt;</span> </span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(question <span class="sc">!=</span> <span class="st">"status_label"</span>,</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>         question <span class="sc">!=</span> <span class="st">"finished_label"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">y =</span> response)) <span class="sc">+</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>() <span class="sc">+</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="fu">vars</span>(<span class="fu">str_wrap</span>(question_abbreviated, <span class="at">width =</span> <span class="dv">32</span>)), </span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>             <span class="at">scales =</span> <span class="st">"free"</span>, <span class="at">ncol =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="cn">NULL</span>, <span class="at">y =</span> <span class="cn">NULL</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="csv_data_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="960"></p>
-</div>
-</div>
-<div class="cell" data-fig.asp="2">
-<div class="cell-output-display">
-<p><img src="csv_data_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="960"></p>
 </div>
 </div>
 </section>

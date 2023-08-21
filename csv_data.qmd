@@ -65,6 +65,20 @@ My survey questions are now in a table that is easy to use for other purposes su
 my_df_colnames_and_questions <- my_df_colnames_and_questions |> 
   pivot_longer(cols = q1:last_col(), names_to = "question_orig_label", values_to = "question_text") |> 
   select(starts_with("question")) 
+
+my_abbreviated_questions <- my_df_colnames_and_questions |> 
+  mutate(question_text = str_remove(question_text, "Thank you for participating in this student satisfaction survey. Your answers will be used to improve the student experience. \n")) |>
+  group_by(question_orig_label) |> 
+  unnest_tokens(word, question_text) |> 
+  anti_join(stop_words) |> 
+  summarise(question_abbreviated = paste(word, collapse = " ")) |> 
+  mutate(question_abbreviated = str_trim(question_abbreviated)) |> 
+  mutate(question_abbreviated = str_to_title(question_abbreviated)) |> 
+  mutate(question_abbreviated = paste(question_orig_label, " ", question_abbreviated))
+
+my_df_colnames_and_questions <- my_df_colnames_and_questions |> 
+  left_join(my_abbreviated_questions, join_by("question_orig_label"))
+
 my_df_colnames_and_questions
   
 ```
@@ -113,7 +127,7 @@ my_df_tall |>
          question != "finished_label") |> 
   ggplot(aes(y = response)) +
   geom_bar() +
-  facet_wrap(vars(str_wrap(question_text, width = 32)), 
+  facet_wrap(vars(str_wrap(question_abbreviated, width = 32)), 
              scales = "free", ncol = 2) +
   labs(x = NULL, y = NULL)
 ```
@@ -123,10 +137,10 @@ my_df_tall |>
 #| fig-width: 10
 #| fig-asp: 2.0
 #| echo: false
+#| output: false
 
 
 # FOR README ##
-
 
 my_df_tall |> 
   left_join(my_df_colnames_and_questions, 
@@ -135,7 +149,7 @@ my_df_tall |>
          question != "finished_label") |> 
   ggplot(aes(y = response)) +
   geom_bar() +
-  facet_wrap(vars(str_wrap(question_text, width = 50)), 
+  facet_wrap(vars(str_wrap(question_abbreviated, width = 50)), 
              scales = "free", ncol = 2) +
   labs(x = NULL, y = NULL, title = "Question text is imported from CSV") +
   theme(plot.title.position = "plot")
